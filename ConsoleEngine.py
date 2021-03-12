@@ -18,6 +18,7 @@ class ConsoleEngine:
             "X": "X",
             "x": "x"
         }
+        self.detailedShade = list("$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ")
         self.bigPixelShades = getBigPixelShades()
         self.pixel = self.shade["full"]
 
@@ -50,7 +51,11 @@ class ConsoleEngine:
 
     def getShade(self, value):
         return [" ", u"\u2591", u"\u2592", u"\u2593", u"\u2588"][
-            round(mapFunc(value, 255, 0, 0, 4))]
+            round(self.mapFunc(value, 255, 0, 0, 4))]
+
+    def getDetailedShade(self, value):
+        return self.detailedShade[
+            round(self.mapFunc(value, 255, 0, 0, 69))]
 
     def getBigPixelShade(self, onPercent):
         num = round(self.mapFunc(onPercent, 0, 100, 0, 16))
@@ -117,13 +122,73 @@ class ConsoleEngine:
                 self.drawPixel(c, shade)
         return line
 
-    def drawTriangle(self, triangle, shade=u"\u2588"):
+    def drawLevelLine(self, start, end, y, shade=u"\u2588"):
+        for x in list(range(round(start), round(end))):
+            self.drawPixel((x, y), shade)
+
+    @staticmethod
+    def collinear(p1, p2, p3):
+        a = x1 * (p2[1] - p3[1]) + p2[0] * (p3[1] - p1[1]) + p3[0] * (p1[1] - p2[1])
+        return a == 0
+
+    def drawTriangleOutline(self, triangle, shade=u"\u2588"):
         self.drawLine(triangle[0], triangle[1], shade)
         self.drawLine(triangle[1], triangle[2], shade)
         self.drawLine(triangle[2], triangle[0], shade)
 
-    def drawPoly(self, poly):
-        [self.drawTriangle(t) for t in self.turnIntoTriangles(poly)]
+    def fillBottomFlatTriangle(self, v1, v2, v3, shade=u"\u2588"):
+        try:
+            invslope1 = (v2[0] - v1[0]) / (v2[1] - v1[1])
+            invslope2 = (v3[0] - v1[0]) / (v3[1] - v1[1])
+
+        except ZeroDivisionError:
+            self.drawLine(v1, v3)
+            return
+
+        curx1 = v1[0]
+        curx2 = v1[0]
+
+        for scanlineY in range(v1[1], v2[1]):
+            self.drawLevelLine(curx2, curx1, scanlineY, shade)  # drawLine((curx1, scanlineY), (curx2, scanlineY))
+            curx1 += invslope1
+            curx2 += invslope2
+
+    def fillTopFlatTriangle(self, v1, v2, v3, shade=u"\u2588"):
+        invslope1 = (v3[0] - v1[0]) / (v3[1] - v1[1])
+        invslope2 = (v3[0] - v2[0]) / (v3[1] - v2[1])
+
+        curx1 = v3[0]
+        curx2 = v3[0]
+
+        for scanlineY in list(range(v1[1], v3[1]))[::-1]:  # --
+            self.drawLevelLine(curx2, curx1, scanlineY, shade)
+            curx1 -= invslope1
+            curx2 -= invslope2
+
+    def drawTriangle(self, triangle, shade=u"\u2588"):
+        triangleAsSet = set(triangle)
+        if len(triangleAsSet) == 3:
+            triangle = sorted(triangle, key=lambda x: x[1])
+            v1, v2, v3 = triangle
+
+            if v2[1] == v3[1]:
+                self.fillBottomFlatTriangle(v1, v2, v3, shade)
+
+            elif v1[1] == v2[1]:
+                self.fillTopFlatTriangle(v1, v2, v3, shade)
+
+            else:
+                v4 = (v1[0] + ((v2[1] - v1[1]) / (v3[1] - v1[1])) * (v3[0] - v1[0])), v2[1]
+                self.fillBottomFlatTriangle(v1, v2, v4, shade)
+                self.fillTopFlatTriangle(v2, v4, v3, shade)
+
+        elif len(triangleAsSet) == 2:
+            self.drawLine(*triangleAsSet)
+        else:
+            self.drawPixel(triangle[0])
+
+    def drawPoly(self, poly, shade=u"\u2588"):
+        [self.drawTriangle(t, shade) for t in self.turnIntoTriangles(poly)]
 
     def drawCircle(self, xy, r, shade=u"\u2588", draw=True):  # Draws circle with radius "r" from midpoint "xy".
         xc, yc = xy
@@ -268,9 +333,12 @@ if __name__ == "__main__":
     # f.drawTriangle(((3, 6), (20, 23), (5, 16)))
     # f.drawLine((0, 0), (948, 506))
     # f.drawBigPixel((10, 10), 30)
-    f.drawPoly([(0, 0), (50, 2), (60, 30), (57, 70), (20, 80), (12, 60)])
+    # f.drawPoly([(0, 0), (50, 2), (60, 30), (57, 70), (20, 80), (12, 60)])
     # for p in [(2, 3), (50, 2), (57, 70), (12, 60)]:
     #    f.drawPixel(p)
     # print(f.turnIntoTriangles([("a"),("b"),("c"),("d")]))
-    f.display(f.shade["full"])
+    #f.drawTriangle([(20, 70), (30, 60), (7, 40)])
+    # f.drawLevelLine(14, 60, 30)
+    #f.display(f.shade["full"])
+    print(f.getDetailedShade(0))
     input("[DONE!]")

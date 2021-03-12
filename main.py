@@ -98,7 +98,9 @@ class Projector:
         for poly in polys:
             projectedPoly = [self.projectPoint(p) for p in poly]
             if all(projectedPoly):
-                self.screen.drawPoly(projectedPoly)
+                d = math.sqrt(pow(poly[0][0]-self.x, 2) + pow(poly[0][1]-self.y, 2) + pow(poly[0][2]-self.z, 2))
+                shade = self.screen.getDetailedShade(self.screen.mapFunc(d, self.near, self.far, 0, 255))
+                self.screen.drawPoly(projectedPoly, shade)
                 # for p in projectedPoly:
                 #     self.screen.drawPixel(p)
 
@@ -107,16 +109,16 @@ class Projector:
 
 
 if __name__ == "__main__":
-    p = Projector((500, 500), (0, 100, 100), 30)
+    p = Projector((500, 500), (0, 40, 100), 30)
     # print(p.projectPoint((0, 0, 0)))
-    p.loadObj("teapot.obj", 100)
-    for _ in range(10):
-        t1 = time.time()
-        p.drawObj()
-        p.y -= 10
-        p.screen.clearScreen()
-        p.display()
-        p.screen.clearField()
-        logging.info(time.time() - t1)
+    p.loadObj("teapot.obj", 75)
+    #for _ in range(10):
+    t1 = time.time()
+    p.drawObj()
+        #p.y -= 10
+
+    p.display()
+        #p.screen.clearField()
+    logging.info(time.time() - t1)
 
     input()
