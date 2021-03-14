@@ -3,6 +3,7 @@ import _ObjLoader
 import ConsoleEngine
 import time
 import logging
+from _resources import *
 
 """x, y, z = 0, 0, 40
 sh = 20
@@ -25,7 +26,8 @@ points = [[p["A"], p["B"], p["C"], p["D"]],
 """
 
 logging.basicConfig(filename='Projector.log', level=logging.INFO, filemode='a')
-logging.info("-"*100)
+logging.info("-" * 100)
+
 
 class Projector:
 
@@ -39,7 +41,6 @@ class Projector:
         self.x, self.y, self.z = pos
 
         self.projectionMatrix = self.getProjectionMatrix()
-
 
     def projectPoint(self, v, draw=True):
         v = v[0] + self.x, v[1] + self.y, v[2] + self.z  # Move camera
@@ -91,32 +92,29 @@ class Projector:
 
     def loadObj(self, name, scaleTo=100):
         self.loader = _ObjLoader.ObjLoader(name, scaleTo)
+        self.vertices, self.faces = self.loader.vertices, self.loader.faces
 
     def drawObj(self):
-        # try:
-        polys = self.loader.polys
-        for poly in polys:
-            projectedPoly = [self.projectPoint(p) for p in poly]
-            if all(projectedPoly):
-                self.screen.drawPoly(projectedPoly)
-                # for p in projectedPoly:
-                #     self.screen.drawPixel(p)
-
-    # except Exception as e:
-    #    print("ERROR: "+ str(e))
+        for poly in self.faces:
+            for triangle in turnIntoTriangles(poly):
+                projectedTriangle = [self.projectPoint(self.vertices[p - 1]) for p in triangle]
+                if all(projectedTriangle):
+                    self.screen.drawTriangle(projectedTriangle, "X")  # )
+                    # for p in projectedPoly:
+                    #     self.screen.drawPixel(p)
 
 
 if __name__ == "__main__":
-    p = Projector((500, 500), (0, 100, 100), 30)
+    p = Projector((170, 170), (0, -40, 100), 30)
     # print(p.projectPoint((0, 0, 0)))
-    p.loadObj("teapot.obj", 100)
+    p.loadObj("deer.obj", 130)
     for _ in range(10):
         t1 = time.time()
         p.drawObj()
-        p.y -= 10
+        p.y -= 2
         p.screen.clearScreen()
         p.display()
         p.screen.clearField()
-        logging.info(time.time() - t1)
+    logging.info(time.time() - t1)
 
     input()
