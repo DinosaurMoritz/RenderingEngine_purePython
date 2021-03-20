@@ -191,11 +191,7 @@ def calcMidpoint(points):
     return (x / l, y / l, z / l)
 
 
-def calcFurthestPointDist(inpTriangles, mp):
-    points = []
-    for t in inpTriangles:
-        for p in t:
-            points.append(p)
+def calcFurthestPointDist(points, mp):
 
     furthestPoint = None
     furthestPointDistSquared = 0
