@@ -196,6 +196,9 @@ class ConsoleEngine:
             logging.error("Failed Printing Field")
             logging.error(str(e))
 
+    def getKeyboardInput(self):
+        pass
+
 
 def changeFontSize(size=2):
     from ctypes import POINTER, WinDLL, Structure, sizeof, byref
@@ -257,8 +260,8 @@ if __name__ == "__main__":
     # for p in [(2, 3), (50, 2), (57, 70), (12, 60)]:
     #    f.drawPixel(p)
     # print(f.turnIntoTriangles([("a"),("b"),("c"),("d")]))b
-    f.drawTriangle([(0, 0), (100, 0), (100, 100)])
-    f.drawTriangle([(0, 0), (0, 100), (100, 100)])
+    f.drawTriangle([(34, 59), (85, 4), (101, 156)])
+    #f.drawTriangle([(0, 0), (0, 100), (150, 100)])
     # f.drawLevelLine(14, 60, 30)
     # f.display(f.shade["full"])
 

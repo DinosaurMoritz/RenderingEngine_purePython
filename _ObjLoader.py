@@ -154,6 +154,9 @@ class ObjLoader:
             self.vertices = [[c for c in v] for v in self.vertices]
             self.faces = [[[c for c in p] for p in f] for f in self.polys]
 
+        self.polys = [self.turnIntoTriangles(poly) for poly in self.polys]
+        # print()
+
 
     def load(self):
         import re
@@ -193,7 +196,18 @@ class ObjLoader:
                                                         0] - 1]))  # -1 because in the OBJ spec, collections start at index 1 rather than 0
             polys.append(sub)
 
-        return list({tuple(sorted(x)) for x in polys})
+        polys = list({tuple(sorted(x)) for x in polys})
+        return [list(poly) for poly in polys]
+
+    def turnIntoTriangles(self, poly):
+        triangles = []
+
+        while len(poly) > 3:
+            triangles.append([poly[0], poly.pop(1), poly[2]])
+
+        triangles.append(poly)
+
+        return triangles
 
 
 
